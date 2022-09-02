@@ -1,5 +1,5 @@
 resilience4j.circuitbreaker:
   instances:
     avaliacaoCB:
-      registerHealthIndicator: true
-      slidingWindowSize: 100
+      minimumNumberOfCalls: 4
+      slidingWindowSize: 8

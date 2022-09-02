@@ -9,10 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class AvaliacaoClientImpl implements AvaliacaoClient {
@@ -25,13 +22,14 @@ public class AvaliacaoClientImpl implements AvaliacaoClient {
 			.queryParam("produtoId", "{produtoId}")
 			.encode()
 			.toUriString();
-	
+
+	private final Map<Long, List<AvaliacaoModel>> CACHE = new HashMap<>();
 	public AvaliacaoClientImpl(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
 	}
 
 	@Override
-	@CircuitBreaker(name = "avaliacaoCB")
+	@CircuitBreaker(name = "avaliacaoCB", fallbackMethod = "buscarTodosPorProdutoNoCache")
 	public List<AvaliacaoModel> buscarTodosPorProduto(Long produtoId) {
 		final List<AvaliacaoModel> avaliacoes = executarRequisicao(produtoId);
 		return avaliacoes;
@@ -51,7 +49,14 @@ public class AvaliacaoClientImpl implements AvaliacaoClient {
 			throw e;
 		}
 
+		logger.info("Alimentando CACHE");
+		CACHE.put(produtoId, Arrays.asList(avaliacoes));
+
 		return Arrays.asList(avaliacoes);
+	}
+	private List<AvaliacaoModel> buscarTodosPorProdutoNoCache(Long produtoId, Throwable e){
+		logger.info("Buscando no CACHE");
+		return CACHE.getOrDefault(produtoId, new ArrayList<>());
 	}
 	
 }
