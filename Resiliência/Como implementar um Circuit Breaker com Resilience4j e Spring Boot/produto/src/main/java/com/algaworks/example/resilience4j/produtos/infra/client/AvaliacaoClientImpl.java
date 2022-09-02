@@ -2,6 +2,7 @@ package com.algaworks.example.resilience4j.produtos.infra.client;
 
 import com.algaworks.example.resilience4j.produtos.client.avaliacoes.AvaliacaoClient;
 import com.algaworks.example.resilience4j.produtos.client.avaliacoes.AvaliacaoModel;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ public class AvaliacaoClientImpl implements AvaliacaoClient {
 	}
 
 	@Override
+	@CircuitBreaker(name = "avaliacaoCB")
 	public List<AvaliacaoModel> buscarTodosPorProduto(Long produtoId) {
 		final List<AvaliacaoModel> avaliacoes = executarRequisicao(produtoId);
 		return avaliacoes;
